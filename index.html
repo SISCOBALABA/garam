@@ -111,7 +111,7 @@ details b{color:var(--fg)}
 .leadsuit{font-size:13px;color:var(--muted)}
 .leadsuit b{font-size:16px}
 .leadsuit .red{color:var(--warn)}
-.board{position:relative;width:100%;max-width:520px;margin:0 auto;aspect-ratio:1/1}
+.board{position:relative;width:calc(100% + 16px);margin-inline:-8px;max-width:660px;align-self:center;aspect-ratio:1/1.08}
 .felt{position:absolute;inset:13% 11%;border-radius:50%;border:1px solid var(--line);
   background:radial-gradient(circle at 50% 42%,var(--ink-3),var(--ink-2) 75%);box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 0 0 8px color-mix(in srgb,var(--ink-3) 55%,transparent)}
 .seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;width:92px;z-index:2}
@@ -127,13 +127,37 @@ details b{color:var(--fg)}
 .crown svg{width:30px;height:20px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;color:#fff;flex:none;
   border:2px solid var(--ink);box-shadow:0 0 0 2px var(--line)}
-.seat.turn .avatar{box-shadow:0 0 0 3px var(--saffron);animation:pulse 1.4s ease-in-out infinite}
+.seat.turn .avatar{box-shadow:0 0 0 2px var(--ink)}
 @keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--saffron) 35%,transparent)}}
 .seat .n{font-weight:700;font-size:13px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seat .pts{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .seat.me .n{color:var(--saffron)}
-.tcard{position:absolute;left:50%;top:50%;z-index:1;transform:translate(calc(-50% + var(--ox)),calc(-50% + var(--oy)))}
-.tcard .card{--w:46px}
+.tcard{position:absolute;left:calc(50% + var(--ox) * 1%);top:calc(50% + var(--oy) * 1%);z-index:1;transform:translate(-50%,-50%)}
+.tcard .card{--w:clamp(52px,15vw,84px)}
+.av-wrap{position:relative;display:grid;place-items:center}
+.ring{position:absolute;inset:-7px;width:calc(100% + 14px);height:calc(100% + 14px);transform:rotate(-90deg);pointer-events:none}
+.ring circle{fill:none;stroke-width:4}
+.ring .bg{stroke:color-mix(in srgb,var(--fg) 15%,transparent)}
+.ring .fg{stroke:var(--saffron);stroke-linecap:round;transition:stroke .3s}
+.ring.low .fg{stroke:var(--warn)}
+.secs{position:absolute;right:-12px;top:-8px;min-width:24px;padding:2px 5px;border-radius:99px;background:var(--saffron);color:var(--saffron-ink);font:700 11px/1.2 var(--f-display);font-variant-numeric:tabular-nums;text-align:center}
+.secs.low{background:var(--warn)}
+.mytimer{position:relative;width:40px;height:40px;display:grid;place-items:center;font:700 13px var(--f-display);font-variant-numeric:tabular-nums}
+.mytimer .ring{inset:0;width:100%;height:100%}
+.packs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:58%;z-index:3}
+.pack{position:relative;width:clamp(48px,13vw,70px);aspect-ratio:1/1.42;padding:0;border:0;background:transparent;transition:transform .25s ease}
+.pack .card{--w:100%;position:absolute;inset:0;width:100%;height:100%}
+.pack .card:nth-child(1){transform:translate(-4px,4px) rotate(-6deg)}
+.pack .card:nth-child(2){transform:translate(-2px,2px) rotate(-3deg)}
+.pack .card:nth-child(4){transform:translate(2px,-2px) rotate(3deg)}
+.pack .card:nth-child(5){transform:translate(4px,-4px) rotate(6deg)}
+.packs.choose .pack{cursor:pointer;animation:bob 1.6s ease-in-out infinite}
+.packs.choose .pack:nth-child(2){animation-delay:.2s}.packs.choose .pack:nth-child(3){animation-delay:.4s}.packs.choose .pack:nth-child(4){animation-delay:.6s}.packs.choose .pack:nth-child(5){animation-delay:.8s}
+.packs.choose .pack:hover{transform:translateY(-8px) scale(1.06)}
+.pack.chosen{transform:translateY(-10px) scale(1.15);filter:drop-shadow(0 0 10px var(--saffron))}
+.pack.gone{opacity:.25;transform:scale(.85)}
+.pack .who{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--saffron);white-space:nowrap}
+@keyframes bob{50%{transform:translateY(-6px)}}
 .tcard.win .card{box-shadow:0 0 0 3px var(--saffron),0 8px 18px rgba(0,0,0,.4)}
 .trick-past .tcard{opacity:.7}
 .trick-past .tcard.win{opacity:1}
@@ -172,7 +196,7 @@ details b{color:var(--fg)}
 .banner small{display:block;font-family:var(--f-body);font-size:14px;font-weight:600;color:var(--saffron);margin-top:6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--card-ink);padding:10px 16px;border-radius:10px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:calc(100% - 32px);z-index:5}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-@media (max-width:420px){.card{--w:58px}.tcard .card{--w:42px}.seat{width:78px}.seat .n{max-width:78px}.avatar{width:38px;height:38px;font-size:16px}}
+@media (max-width:420px){.card{--w:58px}.seat{width:78px}.seat .n{max-width:78px}.avatar{width:38px;height:38px;font-size:16px}}
 </style>
 </head>
 <body>
@@ -186,8 +210,10 @@ const PIPS={3:[[50,14],[50,50],[50,86]],4:[[30,14],[70,14],[30,86],[70,86]],5:[[
   6:[[30,14],[70,14],[30,50],[70,50],[30,86],[70,86]],7:[[30,14],[70,14],[50,32],[30,50],[70,50],[30,86],[70,86]],
   8:[[30,14],[70,14],[50,32],[30,50],[70,50],[50,68],[30,86],[70,86]],9:[[30,12],[70,12],[30,37],[70,37],[50,50],[30,63],[70,63],[30,88],[70,88]]};
 const LAYOUT={2:['b','t'],3:['b','tl','tr'],4:['b','l','t','r'],5:['b','l','tl','tr','r']};
-const OFFS={b:[0,40],t:[0,-40],l:[-58,4],r:[58,4],tl:[-32,-36],tr:[32,-36]};
+const OFFS={b:[0,13],t:[0,-13],l:[-19,1],r:[19,1],tl:[-12,-11],tr:[12,-11]};
 const SHOUTS={kie:'Kieeee',joue:'JOUE !!',coupe:'COUPES ÇA !!',popoh:'Popoh !'};
+const BUBBLES={...SHOUTS,time:'Temps écoulé !'};
+const TURN_MS=45000;
 const CROWN='<svg viewBox="0 0 30 20" aria-hidden="true"><path d="M2 17 L4 5 L10 11 L15 2 L20 11 L26 5 L28 17 Z" fill="#f3b733" stroke="#2a1d00" stroke-width="1.2" stroke-linejoin="round"/><circle cx="15" cy="12" r="1.8" fill="#b3362c"/><rect x="2" y="16" width="26" height="3" rx="1" fill="#d99a1a" stroke="#2a1d00" stroke-width="1"/></svg>';
 const BROKER='wss://broker.hivemq.com:8884/mqtt';
 const TOPIC='garam-siscobalaba-v2/';
@@ -222,7 +248,7 @@ let pseudo=lsGet('garam.pseudo')||'';
 let view='home';          // home | connecting | table
 let isHost=false,client=null,base='',G=null,game=null;
 let joinCode='',lost=false,noHostT=null;
-let activeShouts={},lastShout=0,busy=false,lastTrickKey='';
+let activeShouts={},lastShout=0,busy=false,lastTrickKey='',clockOff=0;
 const app=document.getElementById('app');
 
 let toastT;
@@ -234,7 +260,7 @@ const shareUrl=code=>location.href.split('#')[0]+'#'+code;
 function hostTable(resume){
   if(!savePseudo())return;
   const saved=resume?JSON.parse(lsGet('garam.hostState')||'null'):null;
-  if(saved){G=saved;G.online={};}
+  if(saved){G=saved;G.online={};if(G.deadline)G.deadline=Date.now()+TURN_MS;if(G.status==='picked')G.status='pick';}
   else G={code:genCode(),status:'lobby',host:myId,players:[{id:myId,name:pseudo}],settings:{rounds:5,kora:false},seats:[],pseudos:{},online:{}};
   const p=G.players.find(p=>p.id===myId);if(p)p.name=pseudo;
   if(G.pseudos&&G.pseudos[myId])G.pseudos[myId]=pseudo;
@@ -276,9 +302,10 @@ function onHostMsg(m){
 }
 function sendTo(id,msg){pub(base+'/down/'+id,msg)}
 function viewFor(id){
-  const {hands,...rest}=G;const counts={};
+  const {hands,packs,...rest}=G;const counts={};
   for(const s of G.seats||[])counts[s]=(hands?.[s]||[]).length;
-  return {...rest,counts,myHand:(hands&&hands[id])||[]};
+  const showHand=G.status!=='pick'&&G.status!=='picked';
+  return {...rest,counts:showHand?counts:{},packCount:packs?packs.length:0,hostNow:Date.now(),myHand:showHand?((hands&&hands[id])||[]):[]};
 }
 function publish(){
   if(!isHost||!G)return;
@@ -315,7 +342,8 @@ function hostApply(from,m){
       const ids=g.players.map(p=>p.id);if(ids.length<2||ids.length>5)return;
       const zero=Object.fromEntries(ids.map(s=>[s,0]));
       g.pseudos=Object.fromEntries(g.players.map(p=>[p.id,p.name]));
-      Object.assign(g,{status:'playing',seats:ids,scores:zero,roundsWon:{...zero},roundNo:1},freshRound(ids,ids[randInt(ids.length)]));
+      Object.assign(g,{status:'playing',seats:ids,scores:zero,roundsWon:{...zero},roundNo:1,packs:null},freshRound(ids,ids[randInt(ids.length)]));
+      g.deadline=Date.now()+TURN_MS;
       return;
     }
     case 'play':{
@@ -324,27 +352,37 @@ function hostApply(from,m){
       if(!hand.includes(c)||!legal(hand,trick).includes(c)){sendTo(from,{t:'error',msg:'Tu dois jouer la fleur demandée.'});return}
       g.hands[from]=hand.filter(x=>x!==c);
       const t2=[...trick,{p:from,c}];
+      g.deadline=Date.now()+TURN_MS;
       if(t2.length<g.seats.length){g.trick=t2;g.turn=nextSeat(g.seats,from);return}
       const ls=suit(t2[0].c);let w=t2[0];for(const t of t2)if(suit(t.c)===ls&&rank(t.c)>rank(w.c))w=t;
       g.winners=[...(g.winners||[]),w];g.trick=[];g.lastTrick={plays:t2,winner:w.p};
       if(g.hands[from].length===0){
         const r=roundPoints(g.winners,g.settings);
         g.scores[w.p]=(g.scores[w.p]||0)+r.pts;g.roundsWon[w.p]=(g.roundsWon[w.p]||0)+1;
-        g.lastRound={winner:w.p,pts:r.pts,kind:r.kind};g.turn=null;g.leader=w.p;
+        g.lastRound={winner:w.p,pts:r.pts,kind:r.kind};g.turn=null;g.leader=w.p;g.deadline=null;
         g.status=g.roundNo>=g.settings.rounds?'finished':'roundEnd';
       }else{g.trickNo=(g.trickNo||1)+1;g.leader=w.p;g.turn=w.p}
       return;
     }
-    case 'next':
+    case 'next':{
+      // Winner of the round picks one of N face-down packs; the others get the rest at random.
       if(g.status!=='roundEnd'||!g.seats.includes(from))return;
-      Object.assign(g,{status:'playing',roundNo:g.roundNo+1},freshRound(g.seats,g.lastRound?.winner||g.seats[0]));return;
+      const d=shuffle(shuffle(shuffle(deck())));
+      g.packs=g.seats.map((_,i)=>d.slice(i*5,i*5+5));
+      g.picker=g.lastRound?.winner||g.seats[0];g.picked=null;g.trick=[];g.lastTrick=null;
+      g.status='pick';g.deadline=Date.now()+TURN_MS;return;
+    }
+    case 'pick':
+      if(g.status!=='pick'||from!==g.picker)return;
+      doPick(parseInt(m.i));return;
     case 'again':{
       if(g.status!=='finished'||!g.seats.includes(from))return;
       const zero=Object.fromEntries(g.seats.map(s=>[s,0]));
-      Object.assign(g,{status:'playing',roundNo:1,scores:zero,roundsWon:{...zero}},freshRound(g.seats,g.seats[randInt(g.seats.length)]));return;
+      Object.assign(g,{status:'playing',roundNo:1,scores:zero,roundsWon:{...zero},packs:null},freshRound(g.seats,g.seats[randInt(g.seats.length)]));
+      g.deadline=Date.now()+TURN_MS;return;
     }
     case 'stop':
-      if(!isH)return;g.status='lobby';return;
+      if(!isH)return;g.status='lobby';g.deadline=null;g.packs=null;return;
     case 'shout':
       if(!SHOUTS[m.k])return;
       if(!g.players.some(p=>p.id===from)&&!g.seats?.includes(from))return;
@@ -352,6 +390,31 @@ function hostApply(from,m){
       showShout(from,m.k);return;
   }
 }
+function doPick(i){
+  const g=G;if(g.status!=='pick'||!g.packs)return;
+  if(!(i>=0&&i<g.packs.length))i=randInt(g.packs.length);
+  const rest=shuffle(g.packs.map((_,k)=>k).filter(k=>k!==i));
+  const hands={},owner={};hands[g.picker]=g.packs[i];owner[i]=g.picker;
+  g.seats.filter(s=>s!==g.picker).forEach((s,k)=>{hands[s]=g.packs[rest[k]];owner[rest[k]]=s});
+  g.hands=hands;g.picked=i;g.packOwners=owner;g.status='picked';g.deadline=null;
+  setTimeout(()=>{
+    if(G!==g||g.status!=='picked')return;
+    Object.assign(g,{status:'playing',roundNo:g.roundNo+1,leader:g.picker,turn:g.picker,trick:[],lastTrick:null,trickNo:1,winners:[],lastRound:null,packs:null,packOwners:null,picked:null});
+    g.deadline=Date.now()+TURN_MS;publish();
+  },2200);
+}
+// Host clock: when a turn runs out, play a random legal card (or pick a random pack).
+setInterval(()=>{
+  if(!isHost||!G||!G.deadline||Date.now()<G.deadline)return;
+  if(G.status==='playing'&&G.turn){
+    const p=G.turn,ok=legal(G.hands[p]||[],G.trick||[]);
+    if(!ok.length)return;
+    hostApply(p,{t:'play',c:ok[randInt(ok.length)]});
+    pub(base+'/all',{t:'shout',from:p,k:'time'});showShout(p,'time');publish();
+  }else if(G.status==='pick'){
+    const p=G.picker;doPick(-1);pub(base+'/all',{t:'shout',from:p,k:'time'});showShout(p,'time');publish();
+  }else G.deadline=null;
+},500);
 
 /* ===== Guest: connect to the host's browser ===== */
 function joinTable(code){
@@ -383,8 +446,8 @@ function joinTable(code){
 }
 function onGuestMsg(m){
   if(!m||typeof m!=='object')return;
-  if(m.t==='state'){game=m.view;view='table';lost=false;render()}
-  else if(m.t==='shout'&&SHOUTS[m.k])showShout(m.from,m.k);
+  if(m.t==='state'){game=m.view;if(typeof game.hostNow==='number')clockOff=game.hostNow-Date.now();view='table';lost=false;render()}
+  else if(m.t==='shout'&&BUBBLES[m.k])showShout(m.from,m.k);
   else if(m.t==='kicked'){toast('L’hôte t’a retiré de la table.');leaveToHome()}
   else if(m.t==='error')toast(String(m.msg||'Action refusée.'));
 }
@@ -426,6 +489,19 @@ function avatarHTML(id,name,size){
   const h=hash(id)%360;const st=size?`width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;`:'';
   return `<span class="avatar" style="${st}background:hsl(${h} 42% 42%)">${esc((name||'?').trim().charAt(0).toUpperCase())}</span>`;
 }
+const RING_LEN=150.8;
+const ringSVG=()=>`<svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle class="bg" cx="26" cy="26" r="24"/><circle class="fg" cx="26" cy="26" r="24" stroke-dasharray="${RING_LEN}" stroke-dashoffset="0"/></svg>`;
+function tickTimers(){
+  const now=Date.now();
+  document.querySelectorAll('[data-deadline]').forEach(el=>{
+    const left=Math.max(0,+el.dataset.deadline-now),low=left<10000;
+    const fg=el.querySelector('.ring .fg');if(fg)fg.setAttribute('stroke-dashoffset',(RING_LEN*(1-Math.min(1,left/TURN_MS))).toFixed(1));
+    el.querySelector('.ring')?.classList.toggle('low',low);
+    const s=el.querySelector('.secs,.secs-in');if(s){s.textContent=Math.ceil(left/1000);s.classList.toggle('low',low)}
+  });
+  requestAnimationFrame(tickTimers);
+}
+requestAnimationFrame(tickTimers);
 const nameOf=(g,id)=>(g?.pseudos?.[id])||(g?.players?.find(p=>p.id===id)?.name)||'Joueur';
 function rulesHTML(){return `<details class="panel"><summary>Les règles du Garam</summary><ul>
   <li>27 cartes : du <b>3 au 9</b> dans les quatre couleurs, sans le <b>9 de pique</b>. 5 cartes chacun, de 2 à 5 joueurs. Tout le paquet est remélangé à chaque manche.</li>
@@ -434,6 +510,8 @@ function rulesHTML(){return `<details class="panel"><summary>Les règles du Gara
   <li>La plus forte carte de la fleur <b>coupe</b> et mène le tour suivant.</li>
   <li>Quand les cartes sont finies, celui qui a mené en dernier gagne la manche : <b>1 point</b>.</li>
   <li><b>Double 3</b> : gagner les deux derniers plis avec des 3 rapporte <b>3 points</b>.</li>
+  <li>À partir de la 2<sup>e</sup> manche, le jeu est coupé en paquets de 5 cartes face cachée : le gagnant de la manche précédente choisit le sien, les autres reçoivent les paquets restants au hasard.</li>
+  <li>Chacun a <b>45 secondes</b> pour jouer. Passé ce délai, une carte autorisée est jouée au hasard à sa place.</li>
   <li>Après le nombre de manches choisi, le plus de points gagne.</li></ul></details>`}
 
 function renderHome(){
@@ -507,33 +585,48 @@ function renderGame(){
   const myTurn=playing&&g.turn===me;
   const ok=myTurn?legal(myHand,trick):[];
   const ls=trick.length?suit(trick[0].c):null;
-  const crownOn=playing?g.leader:g.lastRound?.winner;
+  const picking=g.status==='pick'||g.status==='picked';
+  const crownOn=playing?g.leader:picking?g.picker:g.lastRound?.winner;
+  const dl=g.deadline?g.deadline-clockOff:0;
+  const timerFor=id=>dl&&((playing&&g.turn===id)||(g.status==='pick'&&g.picker===id));
 
   let statusbar;
-  if(playing){
+  if(picking){
+    const mine=g.picker===me;
+    const st=g.status==='picked'?'Distribution des paquets…':mine?'<span class="hl">Choisis ton paquet</span>':`<span class="hl">${esc(nameOf(g,g.picker))}</span> choisit son paquet`;
+    statusbar=`<div class="statusbar"><div class="label">Manche ${g.roundNo+1}/${g.settings.rounds} · Le gagnant choisit</div><div class="status">${st}</div><div class="leadsuit">&nbsp;</div></div>`;
+  }else if(playing){
     const st=myTurn?(trick.length?'<span class="hl">À toi de jouer</span>':'<span class="hl">À toi de mener</span>'):`Au tour de <span class="hl">${esc(nameOf(g,g.turn))}</span>`;
     statusbar=`<div class="statusbar"><div class="label">Manche ${g.roundNo}/${g.settings.rounds} · Pli ${g.trickNo}/5</div><div class="status">${st}</div>
       ${ls?`<div class="leadsuit">Fleur demandée : <b class="${SUITS[ls].red?'red':''}">${SUITS[ls].s}</b> ${SUITS[ls].n}</div>`:'<div class="leadsuit">&nbsp;</div>'}</div>`;
   }else statusbar=`<div class="statusbar"><div class="label">${g.status==='finished'?'Fin de partie':`Manche ${g.roundNo}/${g.settings.rounds} terminée`}</div></div>`;
 
   const showPast=(!trick.length&&g.lastTrick)||!playing;
-  const plays=showPast?(g.lastTrick?.plays||[]):trick;
+  const plays=picking?[]:showPast?(g.lastTrick?.plays||[]):trick;
+  let packsHTML='';
+  if(picking){
+    const choose=g.status==='pick'&&g.picker===me;
+    packsHTML=`<div class="packs ${choose?'choose':''}">${Array.from({length:g.packCount||g.seats.length},(_,i)=>{
+      const st=g.status==='picked'?(i===g.picked?'chosen':''):'';const own=g.packOwners?.[i];
+      return `<button class="pack ${st}" data-pack="${i}" ${choose?'':'tabindex="-1"'} aria-label="Paquet ${i+1}">${'<span class="card back"></span>'.repeat(5)}${own?`<span class="who">${esc(nameOf(g,own))}</span>`:''}</button>`}).join('')}</div>`;
+  }
   const key=g.code+g.roundNo+'-'+g.trickNo+'-'+trick.length;
   const animate=key!==lastTrickKey;lastTrickKey=key;
   const tcards=plays.map((p,k)=>{const [ox,oy]=OFFS[posOf[p.p]||'t'];const win=showPast&&p.p===g.lastTrick?.winner;
-    return `<div class="tcard ${win?'win':''}" style="--ox:${ox}px;--oy:${oy}px">${cardHTML(p.c,animate&&!showPast&&k===plays.length-1?'pop':'')}</div>`}).join('');
+    return `<div class="tcard ${win?'win':''}" style="--ox:${ox};--oy:${oy}">${cardHTML(p.c,animate&&!showPast&&k===plays.length-1?'pop':'')}</div>`}).join('');
   const note=playing&&!plays.length?`<div class="center-note">${esc(nameOf(g,g.leader))} mène la danse</div>`:'';
   const seats=ordered.map(id=>{const pos=posOf[id],cnt=g.counts?.[id]||0,sh=activeShouts[id];
-    return `<div class="seat p-${pos} ${playing&&g.turn===id?'turn':''} ${id===me?'me':''} ${g.online?.[id]===false?'offline':''}">
-      ${sh?`<span class="bubble k-${sh.k}" role="status">${SHOUTS[sh.k]}</span>`:''}
+    const tm=timerFor(id);
+    return `<div class="seat p-${pos} ${tm?'turn':''} ${id===me?'me':''} ${g.online?.[id]===false?'offline':''}">
+      ${sh?`<span class="bubble k-${sh.k}" role="status">${BUBBLES[sh.k]}</span>`:''}
       <span class="crown ${crownOn===id?'':'off'}" title="Mène la danse">${CROWN}</span>
-      ${avatarHTML(id,nameOf(g,id))}
+      <span class="av-wrap" ${tm?`data-deadline="${dl}"`:''}>${avatarHTML(id,nameOf(g,id))}${tm?ringSVG()+'<span class="secs"></span>':''}</span>
       <span class="n">${esc(nameOf(g,id))}${id===me?' (toi)':''}</span>
       ${id===me?'':`<div class="mini">${Array.from({length:cnt},()=>'<span class="card back"></span>').join('')}</div>`}
       <span class="pts">${g.online?.[id]===false?'hors ligne':ptsTxt(g.scores?.[id])}</span></div>`}).join('');
 
   let endPanel='';
-  if(!playing){
+  if(!playing&&!picking){
     const lr=g.lastRound,done=g.status==='finished';let title='';
     if(done){const top=Math.max(...g.seats.map(s=>g.scores[s]||0));const w=g.seats.filter(s=>(g.scores[s]||0)===top);
       title=w.length>1?`Égalité entre ${w.map(x=>esc(nameOf(g,x))).join(' et ')}`:`${esc(nameOf(g,w[0]))} remporte la partie`}
@@ -547,11 +640,11 @@ function renderGame(){
   return `
   <div class="row" style="justify-content:space-between"><button class="btn-ghost" id="back">← ${amHost?'Fermer la table':'Quitter'}</button><span class="muted">Table <span class="code">${esc(g.code)}</span></span></div>
   ${statusbar}
-  <div class="board"><div class="felt"></div><div class="${showPast?'trick-past':''}">${tcards}</div>${note}${seats}</div>
+  <div class="board"><div class="felt"></div><div class="${showPast?'trick-past':''}">${tcards}</div>${note}${packsHTML}${seats}</div>
   ${seated?`<div class="shouts">${Object.entries(SHOUTS).map(([k,t])=>`<button class="shout-btn" data-shout="${k}">${t}</button>`).join('')}</div>`:''}
   ${endPanel}
   ${seated?`<div class="panel">
-    <div class="me-bar"><h3>Ta main</h3>
+    <div class="me-bar"><div class="row" style="gap:10px"><h3>Ta main</h3>${timerFor(me)?`<span class="mytimer" data-deadline="${dl}">${ringSVG()}<span class="secs-in"></span></span>`:''}</div>
     ${myTurn&&ls&&ok.length&&suit(ok[0])===ls?`<span class="pill go">Joue ${SUITS[ls].s}</span>`:myTurn&&ls?'<span class="pill">Pas de '+SUITS[ls].s+' : joue ce que tu veux</span>':''}</div>
     <div class="hand ${myTurn?'myturn':''}">${myHand.map(c=>cardHTML(c,!playing?'':myTurn?(ok.includes(c)?'ok':'no'):'')).join('')||'<span class="muted">Plus de cartes.</span>'}</div>
   </div>`:`<div class="empty">Tu regardes cette partie. Tu pourras jouer à la prochaine.</div>`}
@@ -590,6 +683,7 @@ app.addEventListener('click',async e=>{
   if(b.id==='again')return send({t:'again'});
   if(b.id==='toLobby')return send({t:'stop'});
   if(b.id==='stop'){if(b.dataset.armed)send({t:'stop'});else{b.dataset.armed='1';b.textContent='Confirmer l’arrêt'}return}
+  if(b.dataset.pack!==undefined){if(game?.status==='pick'&&game.picker===me)send({t:'pick',i:+b.dataset.pack});return}
   if(b.classList.contains('card')&&b.dataset.c&&b.closest('.hand'))return play(b.dataset.c);
 });
 app.addEventListener('change',e=>{
