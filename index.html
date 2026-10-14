@@ -1,0 +1,600 @@
+TEST123<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151a3d">
+<title>Garam entre amis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+/* Layout: a round indigo table seen from your chair; players sit around it by count, the trick lands in the middle, your hand sits below. */
+:root{
+  --ink:#151a3d; --ink-2:#1e2552; --ink-3:#28306a; --line:#363f80;
+  --fg:#eef0ff; --muted:#a3a9d4;
+  --paper:#ece2c9; --paper-edge:#c9b994; --card-ink:#23222a; --red:#b3362c; --frame:#4f66a6;
+  --saffron:#f3b733; --saffron-ink:#2a1d00; --good:#5fd39a; --warn:#ff8a7a;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-card:"Cormorant Garamond","Georgia","Times New Roman",serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--ink);color:var(--fg)}
+body{margin:0;font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));
+  background-image:radial-gradient(120% 70% at 50% 35%,var(--ink-2) 0%,var(--ink) 70%);min-height:100vh}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,7vw,44px);font-weight:800}
+h2{font-size:18px;font-weight:700}
+h3{font-size:14px;font-weight:600}
+p{margin:0}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand .suits{font-size:22px;letter-spacing:6px;color:var(--saffron)}
+.brand .suits .r{color:var(--warn)}
+.panel{background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1 1 160px;min-width:0}
+input[type=text],input[type=number]{font:inherit;color:var(--fg);background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+#code{text-transform:uppercase;letter-spacing:.2em;font-family:var(--f-display)}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--ink-3);color:var(--fg);padding:10px 14px;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn-main{background:var(--saffron);color:var(--saffron-ink);border-color:var(--saffron);font-family:var(--f-display);font-weight:700;font-size:14px;padding:12px 18px}
+.btn-ghost{background:transparent}
+.btn-danger{background:transparent;color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--ink);border:1px solid var(--line);border-radius:12px}
+.item .t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--ink-3);color:var(--muted);white-space:nowrap}
+.pill.go{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+.pill.you{background:var(--saffron);color:var(--saffron-ink)}
+.pill.off{color:var(--warn)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:99px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--saffron);color:var(--saffron-ink);border-color:var(--saffron)}
+.empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+.alert{padding:12px 14px;border-radius:12px;border:1px solid var(--warn);color:var(--fg);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:10px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+details b{color:var(--fg)}
+.toggle{display:flex;gap:10px;align-items:flex-start}
+.toggle input{width:20px;height:20px;accent-color:var(--saffron);margin-top:1px}
+.bigcode{font-family:var(--f-display);font-size:34px;font-weight:800;letter-spacing:.2em;color:var(--saffron)}
+.sharelink{font-size:13px;color:var(--muted);overflow-wrap:anywhere;user-select:all}
+.code{font-family:var(--f-display);letter-spacing:.15em;color:var(--saffron)}
+
+/* Worn playing cards */
+.card{--w:66px;width:var(--w);height:calc(var(--w)*1.42);border-radius:calc(var(--w)*.11);position:relative;padding:0;flex:none;
+  color:var(--card-ink);font-family:var(--f-card);
+  background-color:var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .32 0 0 0 0 .18 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(circle at var(--sx,78%) var(--sy,14%),rgba(125,85,35,.20),transparent 32%),
+    radial-gradient(circle at 12% 88%,rgba(125,85,35,.16),transparent 38%),
+    linear-gradient(160deg,rgba(255,252,240,.45),rgba(150,115,60,.14));
+  border:1px solid var(--paper-edge);
+  box-shadow:inset 0 0 calc(var(--w)*.1) rgba(110,78,36,.45),inset 0 0 0 1px rgba(255,250,235,.35),0 1px 0 var(--paper-edge),0 6px 14px rgba(0,0,0,.42);
+  transform:rotate(var(--tilt,0deg));transition:transform .15s ease,box-shadow .15s ease}
+.card.red{color:var(--red)}
+.card .idx{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.9;font-weight:700;z-index:1;width:calc(var(--w)*.2)}
+.card .idx b{font-size:calc(var(--w)*.27);font-weight:700}
+.card .idx i{font-style:normal;font-size:calc(var(--w)*.17);font-family:system-ui,sans-serif}
+.card .idx.tl{top:calc(var(--w)*.05);left:calc(var(--w)*.04)}
+.card .idx.br{bottom:calc(var(--w)*.05);right:calc(var(--w)*.04);transform:rotate(180deg)}
+.card .face{position:absolute;top:9%;bottom:9%;left:22%;right:22%;border:1px solid color-mix(in srgb,var(--frame) 55%,transparent);border-radius:2px}
+.card .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--w)*.17);line-height:1;font-family:system-ui,sans-serif;opacity:.92}
+.card .pip.f{transform:translate(-50%,-50%) rotate(180deg)}
+.card.back{background-color:#2c3a74;border-color:#c9b994;
+  background-image:
+    repeating-linear-gradient(45deg,transparent 0 4px,rgba(236,226,201,.28) 4px 5px),
+    repeating-linear-gradient(-45deg,transparent 0 4px,rgba(236,226,201,.28) 4px 5px);
+  box-shadow:inset 0 0 0 2px var(--paper),inset 0 0 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.35)}
+.hand{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding-top:8px}
+.hand .card.ok:hover{transform:rotate(var(--tilt,0deg)) translateY(-8px)}
+.hand.myturn .card.ok{box-shadow:inset 0 0 calc(var(--w)*.1) rgba(110,78,36,.45),0 0 0 3px var(--saffron),0 10px 20px rgba(0,0,0,.45)}
+.hand .card.no{filter:saturate(.35) brightness(.62);cursor:not-allowed}
+.mini{display:flex;justify-content:center;min-height:20px}
+.mini .card{--w:14px;border-radius:2px;margin-left:-6px;box-shadow:inset 0 0 0 1px var(--paper)}
+.mini .card:first-child{margin-left:0}
+
+/* Table seen from your chair */
+.statusbar{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.status{font-family:var(--f-display);font-size:15px;font-weight:600}
+.status .hl{color:var(--saffron)}
+.leadsuit{font-size:13px;color:var(--muted)}
+.leadsuit b{font-size:16px}
+.leadsuit .red{color:var(--warn)}
+.board{position:relative;width:100%;max-width:520px;margin:0 auto;aspect-ratio:1/1}
+.felt{position:absolute;inset:13% 11%;border-radius:50%;border:1px solid var(--line);
+  background:radial-gradient(circle at 50% 42%,var(--ink-3),var(--ink-2) 75%);box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 0 0 8px color-mix(in srgb,var(--ink-3) 55%,transparent)}
+.seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;width:92px;z-index:2}
+.seat.p-b{left:50%;bottom:0;transform:translateX(-50%)}
+.seat.p-t{left:50%;top:0;transform:translateX(-50%)}
+.seat.p-l{left:0;top:50%;transform:translateY(-50%)}
+.seat.p-r{right:0;top:50%;transform:translateY(-50%)}
+.seat.p-tl{left:2%;top:4%}
+.seat.p-tr{right:2%;top:4%}
+.seat.offline .avatar{filter:grayscale(1) brightness(.6)}
+.crown{height:20px;width:30px;display:block}
+.crown.off{visibility:hidden}
+.crown svg{width:30px;height:20px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;color:#fff;flex:none;
+  border:2px solid var(--ink);box-shadow:0 0 0 2px var(--line)}
+.seat.turn .avatar{box-shadow:0 0 0 3px var(--saffron);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--saffron) 35%,transparent)}}
+.seat .n{font-weight:700;font-size:13px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .pts{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.seat.me .n{color:var(--saffron)}
+.tcard{position:absolute;left:50%;top:50%;z-index:1;transform:translate(calc(-50% + var(--ox)),calc(-50% + var(--oy)))}
+.tcard .card{--w:46px}
+.tcard.win .card{box-shadow:0 0 0 3px var(--saffron),0 8px 18px rgba(0,0,0,.4)}
+.trick-past .tcard{opacity:.7}
+.trick-past .tcard.win{opacity:1}
+.center-note{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;color:var(--muted);text-align:center;max-width:40%}
+.pop{animation:pop .22s ease-out}
+@keyframes pop{from{opacity:.1;scale:.85}to{opacity:1;scale:1}}
+
+/* Shouts */
+.shouts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.shout-btn{font-family:var(--f-display);font-weight:800;letter-spacing:.02em;font-size:13px;padding:9px 14px;border-radius:12px;
+  background:var(--paper);color:var(--red);border:2px solid var(--card-ink);box-shadow:3px 3px 0 var(--card-ink);transform:rotate(-2deg)}
+.shout-btn:nth-child(2){transform:rotate(1.5deg);color:var(--card-ink)}
+.shout-btn:nth-child(3){transform:rotate(-1deg)}
+.shout-btn:nth-child(4){transform:rotate(2.5deg);background:var(--saffron);color:var(--card-ink)}
+.shout-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--card-ink)}
+.bubble{position:absolute;left:50%;z-index:4;white-space:nowrap;pointer-events:none;
+  font-family:var(--f-display);font-weight:800;font-size:17px;letter-spacing:.01em;
+  background:var(--saffron);color:var(--red);padding:6px 12px;border:2.5px solid var(--card-ink);border-radius:14px;box-shadow:3px 3px 0 var(--card-ink);
+  -webkit-text-stroke:.4px var(--card-ink);animation:yell .5s cubic-bezier(.2,1.6,.4,1) both,shake .35s .5s ease-in-out 2}
+.bubble.k-kie{background:var(--paper);color:var(--card-ink);-webkit-text-stroke:0}
+.bubble.k-coupe{background:var(--red);color:var(--paper);-webkit-text-stroke:0}
+.bubble.k-popoh{background:var(--ink-3);color:var(--saffron);border-color:var(--saffron);box-shadow:3px 3px 0 var(--saffron);-webkit-text-stroke:0}
+.seat.p-b .bubble,.seat.p-l .bubble,.seat.p-r .bubble{bottom:calc(100% + 2px);translate:-50% 0}
+.seat.p-t .bubble,.seat.p-tl .bubble,.seat.p-tr .bubble{top:calc(100% + 2px);translate:-50% 0}
+.seat.p-l .bubble,.seat.p-tl .bubble{left:0;translate:0 0}
+.seat.p-r .bubble,.seat.p-tr .bubble{left:auto;right:0;translate:0 0}
+@keyframes yell{from{scale:.2;rotate:-12deg;opacity:0}to{scale:1;rotate:-3deg;opacity:1}}
+@keyframes shake{25%{rotate:2deg}75%{rotate:-6deg}}
+
+.me-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.score-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.score-table td{padding:8px 4px;border-bottom:1px solid var(--line)}
+.score-table td:last-child,.score-table td:nth-child(2){text-align:right}
+.score-table tr.lead td{color:var(--saffron);font-weight:700}
+.banner{font-family:var(--f-display);font-size:clamp(18px,5vw,26px);font-weight:800;text-align:center;text-wrap:balance}
+.banner small{display:block;font-family:var(--f-body);font-size:14px;font-weight:600;color:var(--saffron);margin-top:6px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--card-ink);padding:10px 16px;border-radius:10px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.4);max-width:calc(100% - 32px);z-index:5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:420px){.card{--w:58px}.tcard .card{--w:42px}.seat{width:78px}.seat .n{max-width:78px}.avatar{width:38px;height:38px;font-size:16px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===== Constants & rules ===== */
+const SUITS={H:{s:'♥',red:1,n:'cœur'},D:{s:'♦',red:1,n:'carreau'},C:{s:'♣',red:0,n:'trèfle'},S:{s:'♠',red:0,n:'pique'}};
+const PIPS={3:[[50,14],[50,50],[50,86]],4:[[30,14],[70,14],[30,86],[70,86]],5:[[30,14],[70,14],[50,50],[30,86],[70,86]],
+  6:[[30,14],[70,14],[30,50],[70,50],[30,86],[70,86]],7:[[30,14],[70,14],[50,32],[30,50],[70,50],[30,86],[70,86]],
+  8:[[30,14],[70,14],[50,32],[30,50],[70,50],[50,68],[30,86],[70,86]],9:[[30,12],[70,12],[30,37],[70,37],[50,50],[30,63],[70,63],[30,88],[70,88]]};
+const LAYOUT={2:['b','t'],3:['b','tl','tr'],4:['b','l','t','r'],5:['b','l','tl','tr','r']};
+const OFFS={b:[0,40],t:[0,-40],l:[-58,4],r:[58,4],tl:[-32,-36],tr:[32,-36]};
+const SHOUTS={kie:'Kieeee',joue:'JOUE !!',coupe:'COUPES ÇA !!',popoh:'Popoh !'};
+const CROWN='<svg viewBox="0 0 30 20" aria-hidden="true"><path d="M2 17 L4 5 L10 11 L15 2 L20 11 L26 5 L28 17 Z" fill="#f3b733" stroke="#2a1d00" stroke-width="1.2" stroke-linejoin="round"/><circle cx="15" cy="12" r="1.8" fill="#b3362c"/><rect x="2" y="16" width="26" height="3" rx="1" fill="#d99a1a" stroke="#2a1d00" stroke-width="1"/></svg>';
+const PEER_PREFIX='garam-tbl-v1-';
+const PEER_OPTS={debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]}};
+
+const rank=c=>+c[0], suit=c=>c[1];
+const deck=()=>{const d=[];for(const s of 'HDCS')for(let r=3;r<=9;r++){if(r===9&&s==='S')continue;d.push(r+s)}return d};
+const shuffle=a=>{a=a.slice();const rnd=new Uint32Array(a.length);crypto.getRandomValues(rnd);for(let i=a.length-1;i>0;i--){const j=rnd[i]%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const sortHand=h=>h.slice().sort((a,b)=>'HSDC'.indexOf(suit(a))-'HSDC'.indexOf(suit(b))||rank(a)-rank(b));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const hash=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))|0;return Math.abs(h)};
+const randInt=n=>crypto.getRandomValues(new Uint32Array(1))[0]%n;
+const genCode=()=>Array.from({length:4},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[randInt(31)]).join('');
+const nextSeat=(seats,id)=>seats[(seats.indexOf(id)+1)%seats.length];
+function legal(hand,trick){if(!trick.length)return hand;const ls=suit(trick[0].c);const f=hand.filter(c=>suit(c)===ls);return f.length?f:hand}
+function roundPoints(winners,settings){
+  const w5=winners[winners.length-1],w4=winners[winners.length-2];
+  if(w4&&rank(w5.c)===3&&rank(w4.c)===3&&w4.p===w5.p)return{pts:3,kind:'Double 3'};
+  if(settings?.kora&&rank(w5.c)===3)return{pts:2,kind:'Fini au 3'};
+  return{pts:1,kind:''};
+}
+// Whole 27-card deck, shuffled three times in a row, every round.
+function freshRound(seats,leader){const d=shuffle(shuffle(shuffle(deck())));const hands={};seats.forEach((s,i)=>hands[s]=d.slice(i*5,i*5+5));return{hands,leader,turn:leader,trick:[],lastTrick:null,trickNo:1,winners:[],lastRound:null}}
+const ptsTxt=n=>`${n||0} pt${(n||0)>1?'s':''}`;
+
+/* ===== Identity & state ===== */
+let myId=lsGet('garam.id');if(!myId){myId='p'+Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>b.toString(16).padStart(2,'0')).join('');lsSet('garam.id',myId)}
+const me=myId;
+let pseudo=lsGet('garam.pseudo')||'';
+let view='home';          // home | connecting | table
+let isHost=false,peer=null,hostConn=null,conns={},G=null,game=null;
+let joinCode='',lost=false,retryT=null,hostRetries=0;
+let activeShouts={},lastShout=0,busy=false,lastTrickKey='';
+const app=document.getElementById('app');
+
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3500)}
+function savePseudo(){const el=document.getElementById('pseudo');const v=((el?el.value:pseudo)||'').trim();if(!v){toast('Choisis un pseudo d’abord.');el?.focus();return false}pseudo=v.slice(0,20);lsSet('garam.pseudo',pseudo);return true}
+const shareUrl=code=>location.href.split('#')[0]+'#'+code;
+
+/* ===== Host: the table lives in this browser ===== */
+function hostTable(resume){
+  if(!savePseudo())return;
+  const saved=resume?JSON.parse(lsGet('garam.hostState')||'null'):null;
+  if(saved){G=saved;G.online={};}
+  else G={code:genCode(),status:'lobby',host:myId,players:[{id:myId,name:pseudo}],settings:{rounds:5,kora:false},seats:[],pseudos:{},online:{}};
+  const p=G.players.find(p=>p.id===myId);if(p)p.name=pseudo;
+  if(G.pseudos&&G.pseudos[myId])G.pseudos[myId]=pseudo;
+  isHost=true;hostRetries=0;view='connecting';render();
+  startHostPeer(!!saved);
+}
+function startHostPeer(resumed){
+  destroyPeer();
+  peer=new Peer(PEER_PREFIX+G.code,PEER_OPTS);
+  peer.on('open',()=>{view='table';G.online[myId]=true;history.replaceState(null,'','#'+G.code);publish()});
+  peer.on('connection',conn=>{
+    conn.on('data',m=>onHostMsg(conn,m));
+    conn.on('close',()=>{if(conn.pid&&conns[conn.pid]===conn){delete conns[conn.pid];G.online[conn.pid]=false;publish()}});
+  });
+  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'){
+      if(resumed&&hostRetries<6){hostRetries++;setTimeout(()=>startHostPeer(true),3000)}
+      else if(!resumed){G.code=genCode();startHostPeer(false)}
+      else{toast('Impossible de rouvrir cette table. Crée-en une nouvelle.');leaveToHome()}
+    }else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='socket-closed'){
+      toast('Connexion au serveur de jeu perdue, nouvelle tentative…');setTimeout(()=>{if(isHost&&view!=='home'&&peer?.disconnected)try{peer.reconnect()}catch(_){}} ,3000);
+    }else if(e.type!=='peer-unavailable'){toast('Problème de connexion : '+e.type)}
+  });
+}
+function onHostMsg(conn,m){
+  if(!m||typeof m!=='object')return;
+  if(m.t==='hello'&&typeof m.id==='string'){
+    conn.pid=m.id;const old=conns[m.id];if(old&&old!==conn){try{old.close()}catch(e){}}
+    conns[m.id]=conn;G.online[m.id]=true;hostApply(m.id,{t:'join',name:m.name});publish();return;
+  }
+  if(!conn.pid)return;
+  hostApply(conn.pid,m);publish();
+}
+function sendTo(id,msg){const c=conns[id];if(c&&c.open)try{c.send(msg)}catch(e){}}
+function viewFor(id){
+  const {hands,...rest}=G;const counts={};
+  for(const s of G.seats||[])counts[s]=(hands?.[s]||[]).length;
+  return {...rest,counts,myHand:(hands&&hands[id])||[]};
+}
+function publish(){
+  if(!isHost||!G)return;
+  for(const id of Object.keys(conns))sendTo(id,{t:'state',view:viewFor(id)});
+  game=viewFor(myId);
+  lsSet('garam.hostState',JSON.stringify({...G,online:{}}));
+  render();
+}
+function hostApply(from,m){
+  const g=G,isH=from===g.host;
+  switch(m.t){
+    case 'join':{
+      const name=String(m.name||'Joueur').trim().slice(0,20)||'Joueur';
+      if(g.seats?.includes(from))g.pseudos[from]=name;
+      const p=g.players.find(p=>p.id===from);
+      if(p){p.name=name;return}
+      if(g.players.length>=5){if(!g.seats?.includes(from))sendTo(from,{t:'error',msg:'La table est pleine (5 joueurs maximum). Tu peux regarder la partie.'});return}
+      g.players.push({id:from,name});return;
+    }
+    case 'leave':
+      if(from===g.host)return;
+      if(g.status==='lobby'||!g.seats?.includes(from))g.players=g.players.filter(p=>p.id!==from);
+      return;
+    case 'kick':
+      if(!isH||m.id===g.host||g.status!=='lobby')return;
+      g.players=g.players.filter(p=>p.id!==m.id);sendTo(m.id,{t:'kicked'});return;
+    case 'settings':
+      if(!isH||g.status!=='lobby')return;
+      if(m.rounds!==undefined){const r=parseInt(m.rounds);if(r>=1&&r<=30)g.settings.rounds=r}
+      if(m.kora!==undefined)g.settings.kora=!!m.kora;
+      return;
+    case 'start':{
+      if(!isH||g.status!=='lobby')return;
+      const ids=g.players.map(p=>p.id);if(ids.length<2||ids.length>5)return;
+      const zero=Object.fromEntries(ids.map(s=>[s,0]));
+      g.pseudos=Object.fromEntries(g.players.map(p=>[p.id,p.name]));
+      Object.assign(g,{status:'playing',seats:ids,scores:zero,roundsWon:{...zero},roundNo:1},freshRound(ids,ids[randInt(ids.length)]));
+      return;
+    }
+    case 'play':{
+      if(g.status!=='playing'||g.turn!==from)return;
+      const hand=g.hands[from]||[],trick=g.trick||[],c=m.c;
+      if(!hand.includes(c)||!legal(hand,trick).includes(c)){sendTo(from,{t:'error',msg:'Tu dois jouer la fleur demandée.'});return}
+      g.hands[from]=hand.filter(x=>x!==c);
+      const t2=[...trick,{p:from,c}];
+      if(t2.length<g.seats.length){g.trick=t2;g.turn=nextSeat(g.seats,from);return}
+      const ls=suit(t2[0].c);let w=t2[0];for(const t of t2)if(suit(t.c)===ls&&rank(t.c)>rank(w.c))w=t;
+      g.winners=[...(g.winners||[]),w];g.trick=[];g.lastTrick={plays:t2,winner:w.p};
+      if(g.hands[from].length===0){
+        const r=roundPoints(g.winners,g.settings);
+        g.scores[w.p]=(g.scores[w.p]||0)+r.pts;g.roundsWon[w.p]=(g.roundsWon[w.p]||0)+1;
+        g.lastRound={winner:w.p,pts:r.pts,kind:r.kind};g.turn=null;g.leader=w.p;
+        g.status=g.roundNo>=g.settings.rounds?'finished':'roundEnd';
+      }else{g.trickNo=(g.trickNo||1)+1;g.leader=w.p;g.turn=w.p}
+      return;
+    }
+    case 'next':
+      if(g.status!=='roundEnd'||!g.seats.includes(from))return;
+      Object.assign(g,{status:'playing',roundNo:g.roundNo+1},freshRound(g.seats,g.lastRound?.winner||g.seats[0]));return;
+    case 'again':{
+      if(g.status!=='finished'||!g.seats.includes(from))return;
+      const zero=Object.fromEntries(g.seats.map(s=>[s,0]));
+      Object.assign(g,{status:'playing',roundNo:1,scores:zero,roundsWon:{...zero}},freshRound(g.seats,g.seats[randInt(g.seats.length)]));return;
+    }
+    case 'stop':
+      if(!isH)return;g.status='lobby';return;
+    case 'shout':
+      if(!SHOUTS[m.k])return;
+      if(!g.players.some(p=>p.id===from)&&!g.seats?.includes(from))return;
+      for(const id of Object.keys(conns))sendTo(id,{t:'shout',from,k:m.k});
+      showShout(from,m.k);return;
+  }
+}
+
+/* ===== Guest: connect to the host's browser ===== */
+function joinTable(code){
+  if(!savePseudo())return;
+  code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length!==4){toast('Le code fait 4 caractères.');return}
+  joinCode=code;isHost=false;lost=false;game=null;view='connecting';render();
+  destroyPeer();
+  peer=new Peer(PEER_OPTS);
+  peer.on('open',connectHost);
+  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
+  peer.on('error',e=>{
+    if(e.type==='peer-unavailable'){
+      if(game){lost=true;render();scheduleRetry()}
+      else{toast('Aucune table ouverte avec le code '+joinCode+'.');leaveToHome()}
+    }else if(['network','server-error','socket-error','socket-closed'].includes(e.type)){lost=true;render();scheduleRetry()}
+    else toast('Problème de connexion : '+e.type);
+  });
+}
+function connectHost(){
+  if(isHost||view==='home'||!peer||peer.destroyed)return;
+  if(peer.disconnected){try{peer.reconnect()}catch(e){}scheduleRetry();return}
+  const c=peer.connect(PEER_PREFIX+joinCode,{reliable:true});hostConn=c;
+  c.on('open',()=>{c.send({t:'hello',id:myId,name:pseudo});lost=false;lsSet('garam.lastCode',joinCode);render()});
+  c.on('data',onGuestMsg);
+  c.on('close',()=>{if(hostConn===c&&view!=='home'){lost=true;render();scheduleRetry()}});
+}
+function scheduleRetry(){clearTimeout(retryT);retryT=setTimeout(connectHost,3000)}
+function onGuestMsg(m){
+  if(!m||typeof m!=='object')return;
+  if(m.t==='state'){game=m.view;view='table';lost=false;render()}
+  else if(m.t==='shout'&&SHOUTS[m.k])showShout(m.from,m.k);
+  else if(m.t==='kicked'){toast('L’hôte t’a retiré de la table.');leaveToHome()}
+  else if(m.t==='error')toast(String(m.msg||'Action refusée.'));
+}
+
+/* ===== Shared actions ===== */
+function send(m){
+  if(isHost){hostApply(myId,m);publish()}
+  else if(hostConn&&hostConn.open){try{hostConn.send(m)}catch(e){toast('Action non envoyée, réessaie.')}}
+  else toast('Connexion en cours avec l’hôte…');
+}
+function destroyPeer(){clearTimeout(retryT);try{peer&&peer.destroy()}catch(e){}peer=null;hostConn=null;conns={}}
+function leaveToHome(){
+  if(!isHost&&hostConn&&hostConn.open){try{hostConn.send({t:'leave'})}catch(e){}}
+  setTimeout(destroyPeer,150);
+  view='home';isHost=false;game=null;activeShouts={};lost=false;
+  history.replaceState(null,'',location.href.split('#')[0]);render();
+}
+function showShout(id,k){
+  const at=Date.now();activeShouts[id]={k,until:at+3000};render();
+  setTimeout(()=>{const a=activeShouts[id];if(a&&a.until<=Date.now()){delete activeShouts[id];render()}},3050);
+}
+function shout(k){if(Date.now()-lastShout<1500)return;lastShout=Date.now();send({t:'shout',k})}
+function play(c){
+  const g=game;if(!g||g.status!=='playing'||g.turn!==me)return;
+  const trick=g.trick||[];
+  if(!legal(g.myHand,trick).includes(c)){toast(`Tu dois jouer ${SUITS[suit(trick[0].c)].n}.`);return}
+  send({t:'play',c});
+}
+
+/* ===== Rendering ===== */
+function cardHTML(c,cls=''){
+  const S=SUITS[suit(c)],r=rank(c),h=hash(c);
+  const tilt=((h%7)-3)*.5,sx=40+h%50,sy=10+(h>>3)%70;
+  const pips=PIPS[r].map(([x,y])=>`<span class="pip ${y>50?'f':''}" style="left:${x}%;top:${y}%">${S.s}</span>`).join('');
+  return `<button class="card ${S.red?'red':''} ${cls}" data-c="${c}" style="--tilt:${tilt}deg;--sx:${sx}%;--sy:${sy}%" aria-label="${r} de ${S.n}"><span class="idx tl"><b>${r}</b><i>${S.s}</i></span><span class="face">${pips}</span><span class="idx br"><b>${r}</b><i>${S.s}</i></span></button>`;
+}
+function avatarHTML(id,name,size){
+  const h=hash(id)%360;const st=size?`width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;`:'';
+  return `<span class="avatar" style="${st}background:hsl(${h} 42% 42%)">${esc((name||'?').trim().charAt(0).toUpperCase())}</span>`;
+}
+const nameOf=(g,id)=>(g?.pseudos?.[id])||(g?.players?.find(p=>p.id===id)?.name)||'Joueur';
+function rulesHTML(){return `<details class="panel"><summary>Les règles du Garam</summary><ul>
+  <li>27 cartes : du <b>3 au 9</b> dans les quatre couleurs, sans le <b>9 de pique</b>. 5 cartes chacun, de 2 à 5 joueurs. Tout le paquet est remélangé à chaque manche.</li>
+  <li>Celui qui mène (la couronne) pose la carte de son choix. Sa couleur (la <b>fleur</b>) est demandée : si tu l'as, tu dois la jouer.</li>
+  <li>Sans la fleur, tu joues ce que tu veux, mais tu ne peux pas gagner le pli.</li>
+  <li>La plus forte carte de la fleur <b>coupe</b> et mène le tour suivant.</li>
+  <li>Quand les cartes sont finies, celui qui a mené en dernier gagne la manche : <b>1 point</b>.</li>
+  <li><b>Double 3</b> : gagner les deux derniers plis avec des 3 rapporte <b>3 points</b>.</li>
+  <li>Après le nombre de manches choisi, le plus de points gagne.</li></ul></details>`}
+
+function renderHome(){
+  const saved=JSON.parse(lsGet('garam.hostState')||'null');
+  const hashCode=(location.hash||'').replace('#','').toUpperCase().slice(0,4);
+  const prefill=hashCode||lsGet('garam.lastCode')||'';
+  return `
+  <div class="panel">
+    <label class="label" for="pseudo">Ton pseudo</label>
+    <input type="text" id="pseudo" maxlength="20" placeholder="Ex. Mathieu" value="${esc(pseudo)}" autocomplete="nickname">
+  </div>
+  <div class="panel">
+    <h2>Rejoindre une table</h2>
+    <p class="muted">Entre le code à 4 caractères que l’hôte t’a envoyé.</p>
+    <div class="row"><input type="text" id="code" class="grow" maxlength="4" placeholder="ABCD" value="${esc(prefill)}" autocomplete="off" autocapitalize="characters">
+      <button class="btn-main" id="join">Rejoindre</button></div>
+  </div>
+  <div class="panel">
+    <h2>Créer une table</h2>
+    <p class="muted">Ton navigateur héberge la partie : garde cette page ouverte pendant que vous jouez.</p>
+    <div class="row"><button class="btn-main" id="create">Créer une table</button>
+    ${saved&&saved.status!=='finished'?`<button id="resume">Reprendre ma table <span class="code">${esc(saved.code)}</span></button>`:''}</div>
+  </div>
+  ${rulesHTML()}`;
+}
+function renderConnecting(){
+  return `<div class="panel"><h2>${isHost?'Ouverture de ta table…':'Connexion à la table '+esc(joinCode)+'…'}</h2>
+    <p class="muted">Ça prend quelques secondes.</p><button class="btn-ghost" id="back">Annuler</button></div>`;
+}
+function renderLobby(){
+  const g=game,amHost=g.host===me,n=g.players.length,s=g.settings||{};
+  const url=shareUrl(g.code);
+  return `
+  <div class="row" style="justify-content:space-between"><button class="btn-ghost" id="back">← ${amHost?'Fermer la table':'Quitter'}</button></div>
+  ${amHost?`<div class="panel" style="align-items:center;text-align:center">
+    <div class="label">Code de la table</div><div class="bigcode">${esc(g.code)}</div>
+    <p class="sharelink">${esc(url)}</p>
+    <button id="copy">Copier le lien pour tes amis</button></div>`
+    :`<div class="panel"><div class="label">Table</div><div class="bigcode" style="font-size:24px">${esc(g.code)}</div></div>`}
+  <div class="panel">
+    <div class="label">Joueurs (${n}/5)</div>
+    <div class="list">${g.players.map(p=>`<div class="item"><span class="row" style="gap:10px;min-width:0">${avatarHTML(p.id,p.name,30)}<span class="t">${esc(p.name)}</span></span>
+      <span class="row">${p.id===g.host?'<span class="pill">Hôte</span>':''}${p.id===me?'<span class="pill you">Toi</span>':''}${g.online?.[p.id]===false?'<span class="pill off">Hors ligne</span>':''}
+      ${amHost&&p.id!==me?`<button class="btn-ghost" data-kick="${esc(p.id)}">Retirer</button>`:''}</span></div>`).join('')}</div>
+    ${n<2?'<p class="muted">En attente d’au moins un autre joueur…</p>':''}
+  </div>
+  <div class="panel">
+    <div class="label">Nombre de manches</div>
+    <div class="chips">${[3,5,8,10,13].map(r=>`<button class="chip" data-rounds="${r}" aria-pressed="${s.rounds===r}" ${amHost?'':'disabled'}>${r}</button>`).join('')}
+      <input type="number" id="roundsCustom" min="1" max="30" value="${s.rounds}" style="width:84px" ${amHost?'':'disabled'} aria-label="Autre nombre de manches"></div>
+    <label class="toggle"><input type="checkbox" id="kora" ${s.kora?'checked':''} ${amHost?'':'disabled'}>
+      <span>Gagner le dernier pli avec un seul 3 vaut <b>2 points</b><br><span class="muted" style="font-size:13px">Le double 3 vaut toujours 3 points.</span></span></label>
+    ${amHost?`<button class="btn-main" id="start" ${n>=2&&n<=5?'':'disabled'}>Distribuer les cartes</button>`
+      :`<p class="muted">L’hôte choisit les réglages et lance la partie.</p>`}
+  </div>
+  ${rulesHTML()}`;
+}
+function scoreRows(g){
+  const order=g.seats.slice().sort((a,b)=>(g.scores[b]||0)-(g.scores[a]||0));const top=g.scores[order[0]]||0;
+  return `<table class="score-table"><tbody>${order.map(id=>`<tr class="${(g.scores[id]||0)===top&&top>0?'lead':''}"><td>${esc(nameOf(g,id))}${id===me?' (toi)':''}</td><td class="muted">${g.roundsWon?.[id]||0} manche${(g.roundsWon?.[id]||0)>1?'s':''}</td><td>${ptsTxt(g.scores[id])}</td></tr>`).join('')}</tbody></table>`;
+}
+function renderGame(){
+  const g=game,seated=g.seats.includes(me),amHost=g.host===me,n=g.seats.length;
+  const start=seated?g.seats.indexOf(me):0;
+  const ordered=[...g.seats.slice(start),...g.seats.slice(0,start)];
+  const layout=LAYOUT[n]||LAYOUT[5];
+  const posOf={};ordered.forEach((id,k)=>posOf[id]=layout[k]);
+  const trick=g.trick||[];
+  const myHand=sortHand(g.myHand||[]);
+  const playing=g.status==='playing';
+  const myTurn=playing&&g.turn===me;
+  const ok=myTurn?legal(myHand,trick):[];
+  const ls=trick.length?suit(trick[0].c):null;
+  const crownOn=playing?g.leader:g.lastRound?.winner;
+
+  let statusbar;
+  if(playing){
+    const st=myTurn?(trick.length?'<span class="hl">À toi de jouer</span>':'<span class="hl">À toi de mener</span>'):`Au tour de <span class="hl">${esc(nameOf(g,g.turn))}</span>`;
+    statusbar=`<div class="statusbar"><div class="label">Manche ${g.roundNo}/${g.settings.rounds} · Pli ${g.trickNo}/5</div><div class="status">${st}</div>
+      ${ls?`<div class="leadsuit">Fleur demandée : <b class="${SUITS[ls].red?'red':''}">${SUITS[ls].s}</b> ${SUITS[ls].n}</div>`:'<div class="leadsuit">&nbsp;</div>'}</div>`;
+  }else statusbar=`<div class="statusbar"><div class="label">${g.status==='finished'?'Fin de partie':`Manche ${g.roundNo}/${g.settings.rounds} terminée`}</div></div>`;
+
+  const showPast=(!trick.length&&g.lastTrick)||!playing;
+  const plays=showPast?(g.lastTrick?.plays||[]):trick;
+  const key=g.code+g.roundNo+'-'+g.trickNo+'-'+trick.length;
+  const animate=key!==lastTrickKey;lastTrickKey=key;
+  const tcards=plays.map((p,k)=>{const [ox,oy]=OFFS[posOf[p.p]||'t'];const win=showPast&&p.p===g.lastTrick?.winner;
+    return `<div class="tcard ${win?'win':''}" style="--ox:${ox}px;--oy:${oy}px">${cardHTML(p.c,animate&&!showPast&&k===plays.length-1?'pop':'')}</div>`}).join('');
+  const note=playing&&!plays.length?`<div class="center-note">${esc(nameOf(g,g.leader))} mène la danse</div>`:'';
+  const seats=ordered.map(id=>{const pos=posOf[id],cnt=g.counts?.[id]||0,sh=activeShouts[id];
+    return `<div class="seat p-${pos} ${playing&&g.turn===id?'turn':''} ${id===me?'me':''} ${g.online?.[id]===false?'offline':''}">
+      ${sh?`<span class="bubble k-${sh.k}" role="status">${SHOUTS[sh.k]}</span>`:''}
+      <span class="crown ${crownOn===id?'':'off'}" title="Mène la danse">${CROWN}</span>
+      ${avatarHTML(id,nameOf(g,id))}
+      <span class="n">${esc(nameOf(g,id))}${id===me?' (toi)':''}</span>
+      ${id===me?'':`<div class="mini">${Array.from({length:cnt},()=>'<span class="card back"></span>').join('')}</div>`}
+      <span class="pts">${g.online?.[id]===false?'hors ligne':ptsTxt(g.scores?.[id])}</span></div>`}).join('');
+
+  let endPanel='';
+  if(!playing){
+    const lr=g.lastRound,done=g.status==='finished';let title='';
+    if(done){const top=Math.max(...g.seats.map(s=>g.scores[s]||0));const w=g.seats.filter(s=>(g.scores[s]||0)===top);
+      title=w.length>1?`Égalité entre ${w.map(x=>esc(nameOf(g,x))).join(' et ')}`:`${esc(nameOf(g,w[0]))} remporte la partie`}
+    endPanel=`<div class="panel" style="align-items:center">
+      ${done?`<div class="banner">${title}</div>`:''}
+      ${lr?`<div class="banner" style="${done?'font-size:16px':''}">${esc(nameOf(g,lr.winner))} gagne la manche<small>+${lr.pts} point${lr.pts>1?'s':''}${lr.kind?' · '+lr.kind:''}</small></div>`:''}
+      ${seated?(done?`<div class="row" style="justify-content:center"><button class="btn-main" id="again">Rejouer</button>${amHost?'<button id="toLobby">Changer les joueurs</button>':''}</div>`
+        :`<button class="btn-main" id="nextRound">Manche suivante</button>`):''}</div>`;
+  }
+
+  return `
+  <div class="row" style="justify-content:space-between"><button class="btn-ghost" id="back">← ${amHost?'Fermer la table':'Quitter'}</button><span class="muted">Table <span class="code">${esc(g.code)}</span></span></div>
+  ${statusbar}
+  <div class="board"><div class="felt"></div><div class="${showPast?'trick-past':''}">${tcards}</div>${note}${seats}</div>
+  ${seated?`<div class="shouts">${Object.entries(SHOUTS).map(([k,t])=>`<button class="shout-btn" data-shout="${k}">${t}</button>`).join('')}</div>`:''}
+  ${endPanel}
+  ${seated?`<div class="panel">
+    <div class="me-bar"><h3>Ta main</h3>
+    ${myTurn&&ls&&ok.length&&suit(ok[0])===ls?`<span class="pill go">Joue ${SUITS[ls].s}</span>`:myTurn&&ls?'<span class="pill">Pas de '+SUITS[ls].s+' : joue ce que tu veux</span>':''}</div>
+    <div class="hand ${myTurn?'myturn':''}">${myHand.map(c=>cardHTML(c,!playing?'':myTurn?(ok.includes(c)?'ok':'no'):'')).join('')||'<span class="muted">Plus de cartes.</span>'}</div>
+  </div>`:`<div class="empty">Tu regardes cette partie. Tu pourras jouer à la prochaine.</div>`}
+  <div class="panel"><h2>Scores</h2>${scoreRows(g)}
+    ${amHost&&g.status!=='finished'?'<button class="btn-danger" id="stop">Arrêter la partie</button>':''}</div>`;
+}
+function render(){
+  const focus=document.activeElement?.id;
+  const vals={};for(const id of ['pseudo','code'])if(document.getElementById(id))vals[id]=document.getElementById(id).value;
+  const head=`<div class="brand"><h1>Garam</h1><div class="suits" aria-hidden="true"><span class="r">♥</span>♠<span class="r">♦</span>♣</div></div>`;
+  let body;
+  if(view==='home')body=renderHome();
+  else if(view==='connecting'||!game)body=renderConnecting();
+  else body=(lost&&!isHost?`<div class="alert">Connexion perdue avec l’hôte, reconnexion en cours…</div>`:'')+(game.status==='lobby'?renderLobby():renderGame());
+  app.innerHTML=head+body;
+  for(const [id,v] of Object.entries(vals)){const el=document.getElementById(id);if(el)el.value=v}
+  if(focus){const el=document.getElementById(focus);if(el)el.focus()}
+}
+
+/* ===== Events ===== */
+app.addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.id==='create')return hostTable(false);
+  if(b.id==='resume')return hostTable(true);
+  if(b.id==='join')return joinTable(document.getElementById('code')?.value);
+  if(b.id==='back'){
+    if(isHost&&game&&game.status!=='lobby'&&!b.dataset.armed){b.dataset.armed='1';b.textContent='Fermer ? La partie s’arrête pour tous';return}
+    return leaveToHome();
+  }
+  if(b.id==='copy'){const url=shareUrl(game.code);try{await navigator.clipboard.writeText(url);toast('Lien copié. Envoie-le à tes amis.')}catch(err){toast('Copie impossible : sélectionne le lien au-dessus.')}return}
+  if(b.dataset.shout)return shout(b.dataset.shout);
+  if(b.dataset.kick)return send({t:'kick',id:b.dataset.kick});
+  if(b.dataset.rounds)return send({t:'settings',rounds:+b.dataset.rounds});
+  if(b.id==='start')return send({t:'start'});
+  if(b.id==='nextRound')return send({t:'next'});
+  if(b.id==='again')return send({t:'again'});
+  if(b.id==='toLobby')return send({t:'stop'});
+  if(b.id==='stop'){if(b.dataset.armed)send({t:'stop'});else{b.dataset.armed='1';b.textContent='Confirmer l’arrêt'}return}
+  if(b.classList.contains('card')&&b.dataset.c&&b.closest('.hand'))return play(b.dataset.c);
+});
+app.addEventListener('change',e=>{
+  if(e.target.id==='roundsCustom'){const v=Math.max(1,Math.min(30,parseInt(e.target.value)||5));send({t:'settings',rounds:v})}
+  if(e.target.id==='kora')send({t:'settings',kora:e.target.checked});
+});
+app.addEventListener('input',e=>{if(e.target.id==='pseudo'){pseudo=e.target.value;lsSet('garam.pseudo',pseudo.trim())}});
+app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='code'){e.preventDefault();joinTable(e.target.value)}});
+window.addEventListener('beforeunload',e=>{if(isHost&&game&&game.status!=='lobby'){e.preventDefault();e.returnValue=''}});
+
+if(typeof Peer==='undefined'){app.innerHTML=`<div class="brand"><h1>Garam</h1></div><div class="alert">Le module de connexion n’a pas pu se charger. Vérifie ta connexion internet puis recharge la page.</div>`}
+else render();
+</script>
+</body>
+</html>
