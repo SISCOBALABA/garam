@@ -7,7 +7,7 @@
 <title>Garam entre amis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <style>
 /* Layout: a round indigo table seen from your chair; players sit around it by count, the trick lands in the middle, your hand sits below. */
 :root{
@@ -189,8 +189,8 @@ const LAYOUT={2:['b','t'],3:['b','tl','tr'],4:['b','l','t','r'],5:['b','l','tl',
 const OFFS={b:[0,40],t:[0,-40],l:[-58,4],r:[58,4],tl:[-32,-36],tr:[32,-36]};
 const SHOUTS={kie:'Kieeee',joue:'JOUE !!',coupe:'COUPES ÇA !!',popoh:'Popoh !'};
 const CROWN='<svg viewBox="0 0 30 20" aria-hidden="true"><path d="M2 17 L4 5 L10 11 L15 2 L20 11 L26 5 L28 17 Z" fill="#f3b733" stroke="#2a1d00" stroke-width="1.2" stroke-linejoin="round"/><circle cx="15" cy="12" r="1.8" fill="#b3362c"/><rect x="2" y="16" width="26" height="3" rx="1" fill="#d99a1a" stroke="#2a1d00" stroke-width="1"/></svg>';
-const PEER_PREFIX='garam-tbl-v1-';
-const PEER_OPTS={debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]}};
+const BROKER='wss://broker.hivemq.com:8884/mqtt';
+const TOPIC='garam-siscobalaba-v2/';
 
 const rank=c=>+c[0], suit=c=>c[1];
 const deck=()=>{const d=[];for(const s of 'HDCS')for(let r=3;r<=9;r++){if(r===9&&s==='S')continue;d.push(r+s)}return d};
@@ -220,8 +220,8 @@ let myId=lsGet('garam.id');if(!myId){myId='p'+Array.from(crypto.getRandomValues(
 const me=myId;
 let pseudo=lsGet('garam.pseudo')||'';
 let view='home';          // home | connecting | table
-let isHost=false,peer=null,hostConn=null,conns={},G=null,game=null;
-let joinCode='',lost=false,retryT=null,hostRetries=0;
+let isHost=false,client=null,base='',G=null,game=null;
+let joinCode='',lost=false,noHostT=null;
 let activeShouts={},lastShout=0,busy=false,lastTrickKey='';
 const app=document.getElementById('app');
 
@@ -238,38 +238,43 @@ function hostTable(resume){
   else G={code:genCode(),status:'lobby',host:myId,players:[{id:myId,name:pseudo}],settings:{rounds:5,kora:false},seats:[],pseudos:{},online:{}};
   const p=G.players.find(p=>p.id===myId);if(p)p.name=pseudo;
   if(G.pseudos&&G.pseudos[myId])G.pseudos[myId]=pseudo;
-  isHost=true;hostRetries=0;view='connecting';render();
-  startHostPeer(!!saved);
+  isHost=true;view='connecting';render();
+  startHost(!!saved);
 }
-function startHostPeer(resumed){
-  destroyPeer();
-  peer=new Peer(PEER_PREFIX+G.code,PEER_OPTS);
-  peer.on('open',()=>{view='table';G.online[myId]=true;history.replaceState(null,'','#'+G.code);publish()});
-  peer.on('connection',conn=>{
-    conn.on('data',m=>onHostMsg(conn,m));
-    conn.on('close',()=>{if(conn.pid&&conns[conn.pid]===conn){delete conns[conn.pid];G.online[conn.pid]=false;publish()}});
+const mqOpts=will=>({clientId:'garam_'+myId.slice(1,9)+'_'+Math.random().toString(16).slice(2,8),keepalive:20,reconnectPeriod:2000,connectTimeout:12000,clean:true,will:{topic:will.topic,payload:JSON.stringify(will.payload),qos:1,retain:!!will.retain}});
+function pub(topic,obj,retain){if(client&&client.connected)try{client.publish(topic,JSON.stringify(obj),{qos:1,retain:!!retain})}catch(e){}}
+function parse(buf){try{const m=JSON.parse(buf.toString());return m&&typeof m==='object'?m:null}catch(e){return null}}
+function startHost(resumed){
+  destroyNet();base=TOPIC+G.code;
+  let checked=resumed,taken=false;
+  client=mqtt.connect(BROKER,mqOpts({topic:base+'/host',payload:{alive:false},retain:true}));
+  client.on('connect',()=>{
+    client.subscribe([base+'/up',base+'/host'],{qos:1},()=>{
+      if(checked)return goLive();
+      setTimeout(()=>{checked=true;if(taken){G.code=genCode();startHost(false)}else goLive()},1500);
+    });
   });
-  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
-  peer.on('error',e=>{
-    if(e.type==='unavailable-id'){
-      if(resumed&&hostRetries<6){hostRetries++;setTimeout(()=>startHostPeer(true),3000)}
-      else if(!resumed){G.code=genCode();startHostPeer(false)}
-      else{toast('Impossible de rouvrir cette table. Crée-en une nouvelle.');leaveToHome()}
-    }else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='socket-closed'){
-      toast('Connexion au serveur de jeu perdue, nouvelle tentative…');setTimeout(()=>{if(isHost&&view!=='home'&&peer?.disconnected)try{peer.reconnect()}catch(_){}} ,3000);
-    }else if(e.type!=='peer-unavailable'){toast('Problème de connexion : '+e.type)}
+  client.on('message',(topic,buf)=>{
+    const m=parse(buf);if(!m)return;
+    if(topic===base+'/host'){if(!checked&&m.alive&&m.host!==myId)taken=true;return}
+    if(topic===base+'/up')onHostMsg(m);
   });
+  client.on('error',()=>{});
 }
-function onHostMsg(conn,m){
-  if(!m||typeof m!=='object')return;
-  if(m.t==='hello'&&typeof m.id==='string'){
-    conn.pid=m.id;const old=conns[m.id];if(old&&old!==conn){try{old.close()}catch(e){}}
-    conns[m.id]=conn;G.online[m.id]=true;hostApply(m.id,{t:'join',name:m.name});publish();return;
-  }
-  if(!conn.pid)return;
-  hostApply(conn.pid,m);publish();
+function goLive(){
+  pub(base+'/host',{alive:true,host:myId,t:Date.now()},true);
+  view='table';G.online[myId]=true;history.replaceState(null,'','#'+G.code);publish();
 }
-function sendTo(id,msg){const c=conns[id];if(c&&c.open)try{c.send(msg)}catch(e){}}
+function onHostMsg(m){
+  if(typeof m.id!=='string'||m.id===myId)return;
+  const from=m.id;
+  if(m.t==='bye'){if(G.online[from]){G.online[from]=false;publish()}return}
+  if(m.t==='leave'){hostApply(from,m);G.online[from]=false;publish();return}
+  G.online[from]=true;
+  if(m.t==='hello'){hostApply(from,{t:'join',name:m.name});publish();return}
+  hostApply(from,m);publish();
+}
+function sendTo(id,msg){pub(base+'/down/'+id,msg)}
 function viewFor(id){
   const {hands,...rest}=G;const counts={};
   for(const s of G.seats||[])counts[s]=(hands?.[s]||[]).length;
@@ -277,7 +282,7 @@ function viewFor(id){
 }
 function publish(){
   if(!isHost||!G)return;
-  for(const id of Object.keys(conns))sendTo(id,{t:'state',view:viewFor(id)});
+  for(const id of Object.keys(G.online))if(id!==myId&&G.online[id])sendTo(id,{t:'state',view:viewFor(id)});
   game=viewFor(myId);
   lsSet('garam.hostState',JSON.stringify({...G,online:{}}));
   render();
@@ -343,7 +348,7 @@ function hostApply(from,m){
     case 'shout':
       if(!SHOUTS[m.k])return;
       if(!g.players.some(p=>p.id===from)&&!g.seats?.includes(from))return;
-      for(const id of Object.keys(conns))sendTo(id,{t:'shout',from,k:m.k});
+      pub(base+'/all',{t:'shout',from,k:m.k});
       showShout(from,m.k);return;
   }
 }
@@ -354,27 +359,28 @@ function joinTable(code){
   code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length!==4){toast('Le code fait 4 caractères.');return}
   joinCode=code;isHost=false;lost=false;game=null;view='connecting';render();
-  destroyPeer();
-  peer=new Peer(PEER_OPTS);
-  peer.on('open',connectHost);
-  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
-  peer.on('error',e=>{
-    if(e.type==='peer-unavailable'){
-      if(game){lost=true;render();scheduleRetry()}
-      else{toast('Aucune table ouverte avec le code '+joinCode+'.');leaveToHome()}
-    }else if(['network','server-error','socket-error','socket-closed'].includes(e.type)){lost=true;render();scheduleRetry()}
-    else toast('Problème de connexion : '+e.type);
+  destroyNet();base=TOPIC+code;
+  let hostSeen=false;
+  client=mqtt.connect(BROKER,mqOpts({topic:base+'/up',payload:{t:'bye',id:myId},retain:false}));
+  client.on('connect',()=>{
+    client.subscribe([base+'/host',base+'/down/'+myId,base+'/all'],{qos:1});
+    clearTimeout(noHostT);
+    noHostT=setTimeout(()=>{if(!hostSeen&&!game&&view!=='home'){toast('Aucune table ouverte avec le code '+code+'.');leaveToHome()}},6000);
   });
+  client.on('message',(topic,buf)=>{
+    const m=parse(buf);if(!m)return;
+    if(topic===base+'/host'){
+      hostSeen=true;
+      if(m.alive){pub(base+'/up',{t:'hello',id:myId,name:pseudo});lsSet('garam.lastCode',code)}
+      else if(game){lost=true;render()}
+      else{toast('Aucune table ouverte avec le code '+code+'. Vérifie que l’hôte a bien la page ouverte.');leaveToHome()}
+      return;
+    }
+    onGuestMsg(m);
+  });
+  client.on('offline',()=>{if(game&&view!=='home'){lost=true;render()}});
+  client.on('error',()=>{});
 }
-function connectHost(){
-  if(isHost||view==='home'||!peer||peer.destroyed)return;
-  if(peer.disconnected){try{peer.reconnect()}catch(e){}scheduleRetry();return}
-  const c=peer.connect(PEER_PREFIX+joinCode,{reliable:true});hostConn=c;
-  c.on('open',()=>{c.send({t:'hello',id:myId,name:pseudo});lost=false;lsSet('garam.lastCode',joinCode);render()});
-  c.on('data',onGuestMsg);
-  c.on('close',()=>{if(hostConn===c&&view!=='home'){lost=true;render();scheduleRetry()}});
-}
-function scheduleRetry(){clearTimeout(retryT);retryT=setTimeout(connectHost,3000)}
 function onGuestMsg(m){
   if(!m||typeof m!=='object')return;
   if(m.t==='state'){game=m.view;view='table';lost=false;render()}
@@ -386,13 +392,14 @@ function onGuestMsg(m){
 /* ===== Shared actions ===== */
 function send(m){
   if(isHost){hostApply(myId,m);publish()}
-  else if(hostConn&&hostConn.open){try{hostConn.send(m)}catch(e){toast('Action non envoyée, réessaie.')}}
+  else if(client&&client.connected)pub(base+'/up',{...m,id:myId});
   else toast('Connexion en cours avec l’hôte…');
 }
-function destroyPeer(){clearTimeout(retryT);try{peer&&peer.destroy()}catch(e){}peer=null;hostConn=null;conns={}}
+function destroyNet(){clearTimeout(noHostT);const c=client;client=null;if(c)try{c.end(true)}catch(e){}}
 function leaveToHome(){
-  if(!isHost&&hostConn&&hostConn.open){try{hostConn.send({t:'leave'})}catch(e){}}
-  setTimeout(destroyPeer,150);
+  if(isHost&&G)pub(base+'/host',{alive:false},true);
+  else pub(base+'/up',{t:'leave',id:myId});
+  clearTimeout(noHostT);const c=client;client=null;setTimeout(()=>{try{c&&c.end(false)}catch(e){}},300);
   view='home';isHost=false;game=null;activeShouts={};lost=false;
   history.replaceState(null,'',location.href.split('#')[0]);render();
 }
@@ -593,7 +600,7 @@ app.addEventListener('input',e=>{if(e.target.id==='pseudo'){pseudo=e.target.valu
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='code'){e.preventDefault();joinTable(e.target.value)}});
 window.addEventListener('beforeunload',e=>{if(isHost&&game&&game.status!=='lobby'){e.preventDefault();e.returnValue=''}});
 
-if(typeof Peer==='undefined'){app.innerHTML=`<div class="brand"><h1>Garam</h1></div><div class="alert">Le module de connexion n’a pas pu se charger. Vérifie ta connexion internet puis recharge la page.</div>`}
+if(typeof mqtt==='undefined'){app.innerHTML=`<div class="brand"><h1>Garam</h1></div><div class="alert">Le module de connexion n’a pas pu se charger. Vérifie ta connexion internet puis recharge la page.</div>`}
 else render();
 </script>
 </body>
