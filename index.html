@@ -6,18 +6,18 @@
 <meta name="theme-color" content="#151a3d">
 <title>Garam entre amis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&family=Cormorant+Garamond:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&family=IM+Fell+English:ital@0;1&display=swap">
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <style>
 /* Layout: a round indigo table seen from your chair; players sit around it by count, the trick lands in the middle, your hand sits below. */
 :root{
   --ink:#151a3d; --ink-2:#1e2552; --ink-3:#28306a; --line:#363f80;
   --fg:#eef0ff; --muted:#a3a9d4;
-  --paper:#ece2c9; --paper-edge:#c9b994; --card-ink:#23222a; --red:#b3362c; --frame:#4f66a6;
+  --paper:#e4d4a8; --paper-edge:#a88f5c; --card-ink:#26211c; --red:#a33026; --frame:#4f66a6;
   --saffron:#f3b733; --saffron-ink:#2a1d00; --good:#5fd39a; --warn:#ff8a7a;
   --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
   --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-card:"Cormorant Garamond","Georgia","Times New Roman",serif;
+  --f-card:"IM Fell English","Georgia","Times New Roman",serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -71,34 +71,40 @@ details b{color:var(--fg)}
 .code{font-family:var(--f-display);letter-spacing:.15em;color:var(--saffron)}
 
 /* Worn playing cards */
-.card{--w:66px;width:var(--w);height:calc(var(--w)*1.42);border-radius:calc(var(--w)*.11);position:relative;padding:0;flex:none;
+.card{--w:66px;width:var(--w);height:calc(var(--w)*1.42);border-radius:calc(var(--w)*.09) calc(var(--w)*.12) calc(var(--w)*.1) calc(var(--w)*.13);position:relative;padding:0;flex:none;overflow:hidden;
   color:var(--card-ink);font-family:var(--f-card);
   background-color:var(--paper);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .32 0 0 0 0 .18 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-    radial-gradient(circle at var(--sx,78%) var(--sy,14%),rgba(125,85,35,.20),transparent 32%),
-    radial-gradient(circle at 12% 88%,rgba(125,85,35,.16),transparent 38%),
-    linear-gradient(160deg,rgba(255,252,240,.45),rgba(150,115,60,.14));
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .26 0 0 0 0 .12 0 0 0 .34 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .02' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .32 0 0 0 0 .14 0 0 0 1.5 -.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--ca,115deg),transparent calc(var(--cp,200%) - 1%),rgba(255,250,228,.6) var(--cp,200%),rgba(110,80,40,.3) calc(var(--cp,200%) + .6%),transparent calc(var(--cp,200%) + 1.6%)),
+    radial-gradient(circle at var(--sx,78%) var(--sy,14%),rgba(120,80,30,.26),transparent 24%),
+    radial-gradient(circle at 0 0,rgba(90,60,25,.35),transparent 14%),
+    radial-gradient(circle at 100% 100%,rgba(90,60,25,.35),transparent 14%),
+    radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(105,72,30,.32) 100%);
+  background-size:160px 160px,cover,auto,auto,auto,auto,auto;
+  background-position:var(--nx,0) var(--ny,0),var(--mx,0) var(--my,0),0 0,0 0,0 0,0 0,0 0;
   border:1px solid var(--paper-edge);
-  box-shadow:inset 0 0 calc(var(--w)*.1) rgba(110,78,36,.45),inset 0 0 0 1px rgba(255,250,235,.35),0 1px 0 var(--paper-edge),0 6px 14px rgba(0,0,0,.42);
-  transform:rotate(var(--tilt,0deg));transition:transform .15s ease,box-shadow .15s ease}
+  box-shadow:inset 0 0 calc(var(--w)*.15) rgba(95,64,26,.55),inset 0 0 calc(var(--w)*.025) rgba(80,52,20,.7),0 1px 0 var(--paper-edge),0 6px 14px rgba(0,0,0,.45);
+  transform:rotate(var(--tilt,0deg));transition:transform .18s ease,box-shadow .18s ease}
 .card.red{color:var(--red)}
-.card .idx{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.9;font-weight:700;z-index:1;width:calc(var(--w)*.2)}
-.card .idx b{font-size:calc(var(--w)*.27);font-weight:700}
-.card .idx i{font-style:normal;font-size:calc(var(--w)*.17);font-family:system-ui,sans-serif}
+.card .idx{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.85;font-weight:400;z-index:1;width:calc(var(--w)*.22);mix-blend-mode:multiply;opacity:.9}
+.card .idx b{font-size:calc(var(--w)*.3);font-weight:400}
+.card .idx i{font-style:normal;font-size:calc(var(--w)*.18);font-family:Georgia,'Times New Roman',serif}
 .card .idx.tl{top:calc(var(--w)*.05);left:calc(var(--w)*.04)}
 .card .idx.br{bottom:calc(var(--w)*.05);right:calc(var(--w)*.04);transform:rotate(180deg)}
-.card .face{position:absolute;top:9%;bottom:9%;left:22%;right:22%;border:1px solid color-mix(in srgb,var(--frame) 55%,transparent);border-radius:2px}
-.card .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--w)*.17);line-height:1;font-family:system-ui,sans-serif;opacity:.92}
+.card .face{position:absolute;top:9%;bottom:9%;left:22%;right:22%}
+.card .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--w)*.19);line-height:1;font-family:Georgia,'Times New Roman',serif;opacity:.88;mix-blend-mode:multiply}
 .card .pip.f{transform:translate(-50%,-50%) rotate(180deg)}
 .card.back{background-color:#2c3a74;border-color:#c9b994;
   background-image:
     repeating-linear-gradient(45deg,transparent 0 4px,rgba(236,226,201,.28) 4px 5px),
     repeating-linear-gradient(-45deg,transparent 0 4px,rgba(236,226,201,.28) 4px 5px);
   box-shadow:inset 0 0 0 2px var(--paper),inset 0 0 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.35)}
-.hand{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap;padding-top:8px}
-.hand .card{--w:clamp(46px,calc((100vw - 124px) / 5),80px)}
-.hand .card.ok:hover{transform:rotate(var(--tilt,0deg)) translateY(-8px)}
+.hand{display:flex;justify-content:center;flex-wrap:nowrap;padding:16px 0 6px}
+.hand .card{--w:clamp(66px,21vw,104px);margin-left:calc(var(--w)*-.3);transform:translateY(var(--fy,0)) rotate(var(--fan,0deg));transform-origin:50% 120%}
+.hand .card:first-child{margin-left:0}
+.hand .card.ok:hover,.hand .card.ok:focus-visible{transform:translateY(calc(var(--fy,0px) - 16px)) rotate(var(--fan,0deg));z-index:2}
 .hand.myturn .card.ok{box-shadow:inset 0 0 calc(var(--w)*.1) rgba(110,78,36,.45),0 0 0 3px var(--saffron),0 10px 20px rgba(0,0,0,.45)}
 .hand .card.no{filter:saturate(.35) brightness(.62);cursor:not-allowed}
 .mini{display:flex;justify-content:center;min-height:17px}
@@ -134,7 +140,7 @@ details b{color:var(--fg)}
 .seat .pts{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .seat.me .n{color:var(--saffron)}
 .tcard{position:absolute;left:calc(50% + var(--ox) * 1%);top:calc(50% + var(--oy) * 1%);z-index:1;transform:translate(-50%,-50%)}
-.tcard .card{--w:clamp(52px,15vw,84px)}
+.tcard .card{--w:clamp(60px,18vw,100px)}
 .av-wrap{position:relative;display:grid;place-items:center}
 .ring{position:absolute;inset:-7px;width:calc(100% + 14px);height:calc(100% + 14px);transform:rotate(-90deg);pointer-events:none}
 .ring circle{fill:none;stroke-width:4}
@@ -480,11 +486,12 @@ function play(c){
 }
 
 /* ===== Rendering ===== */
-function cardHTML(c,cls=''){
+function cardHTML(c,cls='',extra=''){
   const S=SUITS[suit(c)],r=rank(c),h=hash(c);
   const tilt=((h%7)-3)*.5,sx=40+h%50,sy=10+(h>>3)%70;
+  const wear=`--nx:${h%160}px;--ny:${(h>>4)%160}px;--mx:${(h>>2)%60}%;--my:${(h>>5)%60}%;`+(h%3===0?`--cp:${30+(h>>6)%40}%;--ca:${95+(h>>3)%60}deg;`:'');
   const pips=PIPS[r].map(([x,y])=>`<span class="pip ${y>50?'f':''}" style="left:${x}%;top:${y}%">${S.s}</span>`).join('');
-  return `<button class="card ${S.red?'red':''} ${cls}" data-c="${c}" style="--tilt:${tilt}deg;--sx:${sx}%;--sy:${sy}%" aria-label="${r} de ${S.n}"><span class="idx tl"><b>${r}</b><i>${S.s}</i></span><span class="face">${pips}</span><span class="idx br"><b>${r}</b><i>${S.s}</i></span></button>`;
+  return `<button class="card ${S.red?'red':''} ${cls}" data-c="${c}" style="--tilt:${tilt}deg;--sx:${sx}%;--sy:${sy}%;${wear}${extra}" aria-label="${r} de ${S.n}"><span class="idx tl"><b>${r}</b><i>${S.s}</i></span><span class="face">${pips}</span><span class="idx br"><b>${r}</b><i>${S.s}</i></span></button>`;
 }
 function avatarHTML(id,name,size){
   const h=hash(id)%360;const st=size?`width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;`:'';
@@ -647,7 +654,7 @@ function renderGame(){
   ${seated?`<div class="panel">
     <div class="me-bar"><div class="row" style="gap:10px"><h3>Ta main</h3>${timerFor(me)?`<span class="mytimer" data-deadline="${dl}">${ringSVG()}<span class="secs-in"></span></span>`:''}</div>
     ${myTurn&&ls&&ok.length&&suit(ok[0])===ls?`<span class="pill go">Joue ${SUITS[ls].s}</span>`:myTurn&&ls?'<span class="pill">Pas de '+SUITS[ls].s+' : joue ce que tu veux</span>':''}</div>
-    <div class="hand ${myTurn?'myturn':''}">${myHand.map(c=>cardHTML(c,!playing?'':myTurn?(ok.includes(c)?'ok':'no'):'')).join('')||'<span class="muted">Plus de cartes.</span>'}</div>
+    <div class="hand ${myTurn?'myturn':''}">${myHand.map((c,i,a)=>{const d=i-(a.length-1)/2;return cardHTML(c,!playing?'':myTurn?(ok.includes(c)?'ok':'no'):'',`--fan:${(d*5).toFixed(1)}deg;--fy:${(d*d*2.5).toFixed(1)}px;`)}).join('')||'<span class="muted">Plus de cartes.</span>'}</div>
   </div>`:`<div class="empty">Tu regardes cette partie. Tu pourras jouer à la prochaine.</div>`}
   <div class="panel"><h2>Scores</h2>${scoreRows(g)}
     ${amHost&&g.status!=='finished'?'<button class="btn-danger" id="stop">Arrêter la partie</button>':''}</div>`;
